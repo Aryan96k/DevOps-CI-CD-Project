@@ -33,21 +33,18 @@ pipeline {
         }
 
         stage("3. Deployment") {
-  // K8s Deployment using Ansible
-  // i. Ensure to establish passwordless connection between Master & Node first
-  // ii. Your deployment.yaml file must contain the Dockerhub image within the container block
-  steps {
-    withCredentials([sshUserPrivateKey(credentialsId: 'my_ec2_creds', keyFileVariable: 'SSH_KEY')]) {
-      def nodeIp = env.NODE_IP
-      def ec2Name = env.EC2_NAME
-      def sshOpts = "-o StrictHostKeyChecking=no"
-
-      sh "ssh ${sshOpts} ${ec2Name}@${nodeIp} kubectl apply -f deployment.yaml"
-      sh "ssh ${sshOpts} ${ec2Name}@${nodeIp} kubectl apply -f service.yaml"
-      sh "ssh ${sshOpts} ${ec2Name}@${nodeIp} kubectl rollout restart deploy"
-      sh "ssh ${sshOpts} ${ec2Name}@${nodeIp} kubectl get service"
-    }
-  }
-}
+          // K8s Deployment using Ansible
+            // i. Ensure to establish passwordless connection between Master & Node first
+           // ii. Your deployment.yaml file must contain the Dockerhub image within the container block
+            steps {
+              sshagent(['my_ec2_creds']) {          // store EC2 username & pem-key in Jenkins credentials
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_NAME}@${NODE_IP}"   // enter your Node-Server private IP here
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_NAME}@${NODE_IP} kubectl apply -f deployment.yaml"
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_NAME}@${NODE_IP} kubectl apply -f service.yaml"
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_NAME}@${NODE_IP} kubectl rollout restart deploy"
+                sh "ssh -o StrictHostKeyChecking=no ${EC2_NAME}@${NODE_IP} kubectl get service"
+              }
+            }
+        }
     }
 }
