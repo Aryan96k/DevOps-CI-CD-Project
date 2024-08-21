@@ -52,16 +52,13 @@ resource "aws_instance" "my_ec2_instance1" {
   vpc_security_group_ids = [aws_security_group.my_security_group1.id]
   key_name               = "Terraform-Key"
 
-# Adding extra Root Volume
   root_block_device {
     volume_size = 30
     volume_type = "gp2"
   }
-
   tags = {
     Name = "MASTER-SERVER"
   }
-
   user_data = <<-EOF
     #!/bin/bash
     # wait for 1min before EC2 initialization
@@ -89,6 +86,7 @@ resource "aws_instance" "my_ec2_instance1" {
       "sudo yum install git -y",
 
       # Install Jenkins 
+      # REF: https://www.jenkins.io/doc/tutorials/tutorial-for-installing-jenkins-on-AWS/
       "sudo yum update –y",
       "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",
       "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key",
@@ -101,6 +99,7 @@ resource "aws_instance" "my_ec2_instance1" {
 
 
       # Install Docker
+      # REF: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-docker.html
       "sudo yum update -y",
       "sudo yum install docker -y",
       "sudo systemctl start docker",
@@ -111,7 +110,7 @@ resource "aws_instance" "my_ec2_instance1" {
       "sudo chmod 666 /var/run/docker.sock",
 
       # Install Trivy
-      
+      # REF: https://aquasecurity.github.io/trivy/v0.18.3/installation/
       "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.rpm",
 
       # Install Ansible
